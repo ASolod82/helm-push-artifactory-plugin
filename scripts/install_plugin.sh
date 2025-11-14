@@ -7,7 +7,7 @@ if [ -n "${HELM_PUSH_PLUGIN_NO_INSTALL_HOOK}" ]; then
     exit 0
 fi
 
-supported_helm_version="v3"
+supported_helm_version="v4"
 
 helm_version="$(helm version | grep "Version" | cut -d '"' -f 2 | cut -d '.' -f 1)"
 
