@@ -50,7 +50,7 @@ dist: clean build-cross
 dist:
 	scripts/release.sh
 
-# usage: make clean build-cross dist VERSION=v0.2-alpha
+# usage: make clean build-cross dist VERSION=v4.0.1
 .PHONY: build-cross
 build-cross: LDFLAGS += -extldflags "-static"
 build-cross: 
