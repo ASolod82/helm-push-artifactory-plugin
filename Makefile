@@ -9,7 +9,9 @@ LDFLAGS   := -w -s
 TESTS     := ./...
 TESTFLAGS :=
 
-HAS_GOX := $(shell command -v gox;)
+GOX_PATH := $(shell command -v gox 2>/dev/null)
+GOX := $(if $(GOX_PATH),$(GOX_PATH),$(shell go env GOPATH)/bin/gox)
+HAS_GOX := $(shell test -f $(GOX) && echo "yes" || echo "")
 
 TARGETS ?= darwin/amd64 linux/amd64 windows/amd64
 BIN_NAME := helm-push-artifactory
@@ -40,7 +42,7 @@ fmt:
 .PHONY: bootstrap
 bootstrap:
 ifndef HAS_GOX
-	@go get -u github.com/mitchellh/gox
+	@go install github.com/mitchellh/gox@latest
 endif
 
 .PHONY: dist
@@ -52,7 +54,11 @@ dist:
 .PHONY: build-cross
 build-cross: LDFLAGS += -extldflags "-static"
 build-cross: 
-	CGO_ENABLED=0 gox -parallel=2 -output="_dist/{{.OS}}-{{.Arch}}/$(PLUGIN_FULL_NAME)/bin/${BIN_NAME}" -osarch='$(TARGETS)' -ldflags '$(LDFLAGS)' github.com/belitre/helm-push-artifactory-plugin/cmd/push
+	@if [ ! -f "$(GOX)" ]; then \
+		echo "gox not found at $(GOX). Run 'make bootstrap' first."; \
+		exit 1; \
+	fi
+	CGO_ENABLED=0 $(GOX) -parallel=2 -output="_dist/{{.OS}}-{{.Arch}}/$(PLUGIN_FULL_NAME)/bin/${BIN_NAME}" -osarch='$(TARGETS)' -ldflags '$(LDFLAGS)' github.com/belitre/helm-push-artifactory-plugin/cmd/push
 
 .PHONY: clean
 clean:
